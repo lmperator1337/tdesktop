@@ -123,6 +123,24 @@ jobs:
           sdk: ${{ env.SDK }}
           toolset: ${{ case(matrix.arch == 'arm64', '', '14.44') }}
 
+      - name: Free runner disk space.
+        shell: pwsh
+        run: |
+          $targets = @(
+            "$env:ProgramFiles\Android",
+            "${env:ProgramFiles(x86)}\Android",
+            "C:\Android",
+            "$env:ProgramFiles\Google",
+            "${env:ProgramFiles(x86)}\Google",
+            "$env:ProgramFiles\dotnet",
+            "${env:ProgramFiles(x86)}\Microsoft\EdgeWebView",
+            "C:\Program Files\MongoDB"
+          )
+          foreach ($p in $targets) {
+            if (Test-Path $p) { Remove-Item -Path $p -Recurse -Force -ErrorAction SilentlyContinue }
+          }
+          "free after cleanup: {0:N2} GB" -f ((Get-PSDrive C).Free/1GB)
+
       - name: NuGet sources.
         run: |
           nuget sources Disable -Name "Microsoft Visual Studio Offline Packages"
